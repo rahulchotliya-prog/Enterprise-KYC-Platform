@@ -3,6 +3,7 @@ from fastapi import Request
 
 from src.infrastructure.logging.logger import logger
 
+
 async def logging_middleware(request: Request, call_next):
     start_time = time.time()
     logger.info(f"Incomming request: {request.method} {request.url}")

@@ -11,7 +11,10 @@ from src.database.session import get_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+):
     credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -24,7 +27,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         user = await UserRepository(db).get_by_id(UUID(user_id))
         if user is None:
             raise credential_exception
-        
+
     except jwt.PyJWTError:
         raise credential_exception
     repository = UserRepository(db)
@@ -33,7 +36,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise credential_exception
     return user
 
-async def require_admin(user :User = Depends(get_current_user)):
+
+async def require_admin(user: User = Depends(get_current_user)):
     if not user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="You are not an admin")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You are not an admin"
+        )
     return user

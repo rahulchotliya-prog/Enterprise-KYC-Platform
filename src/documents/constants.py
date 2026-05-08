@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class DocumentStatus(str,Enum):
+class DocumentStatus(str, Enum):
     UPLOADED = "UPLOADED"
 
     PROCESSING = "PROCESSING"

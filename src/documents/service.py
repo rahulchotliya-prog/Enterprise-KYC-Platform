@@ -11,9 +11,9 @@ from src.infrastructure.tasks.document_task import process_document_task
 
 
 class DocumentService:
-    def __init__(self, repository:DocumentRepository):
+    def __init__(self, repository: DocumentRepository):
         self.repository = repository
-    
+
     async def uploade_document(self, file: UploadFile, user_id):
 
         upload_dir = "uploads/documents"
@@ -43,7 +43,7 @@ class DocumentService:
             filename=unique_filename,
             original_filename=file.filename,
             file_size=len(content),
-            content_type=file.content_type
+            content_type=file.content_type,
         )
 
         saved_document = await self.repository.create_document(document)
@@ -68,8 +68,8 @@ class DocumentService:
         analytics = await self.repository.get_analytics()
         await redis_client.set(cache_key, json.dumps(analytics))
         return analytics
-    
-    async def mark_document_failed(self, document_id:str, reason:str):
+
+    async def mark_document_failed(self, document_id: str, reason: str):
         document = await self.repository.get_by_id(document_id)
         if document:
             document.status = "FAILED"

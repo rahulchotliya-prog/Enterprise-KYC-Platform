@@ -5,9 +5,10 @@ from src.database.session import AsyncSessionLocal
 from src.documents.models import Document
 from src.documents.constants import DocumentStatus
 import time
-from src.documents.utils import simulate_ocr_extraction,validate_extracted_data
+from src.documents.utils import simulate_ocr_extraction, validate_extracted_data
 from src.infrastructure.redis import get_redis_client
 from src.infrastructure.logging.logger import logger
+
 
 # @celery_app.task
 @celery_app.task(
@@ -15,10 +16,10 @@ from src.infrastructure.logging.logger import logger
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3},
     retry_backoff=True,
-    bind=True
+    bind=True,
 )
-def process_document_task(self,document_id:str):
-    
+def process_document_task(self, document_id: str):
+
     # print(f"Processing document with id: {document_id}")
     logger.info(f"Processing document with id: {document_id}")
     # loop = asyncio.new_event_loop()
@@ -31,7 +32,9 @@ def process_document_task(self,document_id:str):
         asyncio.run(process_document(document_id))
     except Exception as e:
         logger.error(f"Error processing document with id: {document_id}, error: {e}")
-        logger.info(f"Retrying document with id: {document_id}, attempt: {self.request.retries + 1}")
+        logger.info(
+            f"Retrying document with id: {document_id}, attempt: {self.request.retries + 1}"
+        )
         self.retry(exc=e, countdown=5)
 
         # Optionally, you can mark the document as failed in the database here
@@ -40,11 +43,10 @@ def process_document_task(self,document_id:str):
     # print(f"Document with id: {document_id} processed")
     logger.info(f"Document with id: {document_id} processed")
 
-    return {
-        "status":"completed"
-    }
+    return {"status": "completed"}
 
-async def process_document(document_id:str):
+
+async def process_document(document_id: str):
     async with AsyncSessionLocal() as db:
         start_time = time.time()
         await db.execute(
@@ -55,7 +57,7 @@ async def process_document(document_id:str):
         await db.commit()
         # await redis_client.delete("analytics_summary")
         # await redis_client.delete("analytics_summary")
-        
+
         # print("Processing Started")
         logger.info("Processing Started")
 
@@ -70,22 +72,17 @@ async def process_document(document_id:str):
         # )
         extracted_data = simulate_ocr_extraction()
 
-        is_valid = validate_extracted_data(
-            extracted_data
-        )
+        is_valid = validate_extracted_data(extracted_data)
 
-        processing_time = int(
-            time.time() - start_time
-    )
+        processing_time = int(time.time() - start_time)
         await db.execute(
             update(Document)
             .where(Document.id == document_id)
             .values(
-                status = DocumentStatus.VERIFIED
-                if is_valid else DocumentStatus.FAILED,
-                extracted_data = extracted_data,
-                processing_time = processing_time,
-                failure_reason = None if is_valid else "Data validation failed"
+                status=DocumentStatus.VERIFIED if is_valid else DocumentStatus.FAILED,
+                extracted_data=extracted_data,
+                processing_time=processing_time,
+                failure_reason=None if is_valid else "Data validation failed",
             )
         )
         await db.commit()
