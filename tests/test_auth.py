@@ -7,6 +7,7 @@ async def test_health_check(client):
     data = response.json()
     assert data['status'] == 'Healthy'
 
+# @pytest.mark.skip(reason="Temporarily skipping auth test")
 @pytest.mark.asyncio
 async def test_login(client):
     response = await client.post("/auth/login", json={"email": "rahul@gmail.com", "password": "R@hul123"})
