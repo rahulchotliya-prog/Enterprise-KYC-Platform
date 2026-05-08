@@ -3,3 +3,6 @@ __pycache__/
 .env
 .pytest_cache/
 *.pyc
+alembic*
+PYTHON PROGRAMMING NOTES.pdf
+uploads/*

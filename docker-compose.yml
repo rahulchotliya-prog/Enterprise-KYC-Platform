@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: enterprise-kyc-api
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres_db
+      - redis
+    volumes:
+      - .:/app
+    networks:
+      - kyc_network
+
+  postgres_db:
+    image: postgres:17
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Rahul123
+      POSTGRES_DB: enterprise_kyc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kyc_network
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kyc_network
+
+  celery_worker:
+    build: .
+    container_name: celery_worker
+    command: celery -A src.infrastructure.celery_app worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres_db
+    volumes:
+      - .:/app
+    networks:
+      - kyc_network
+
+  celery_beat:
+    build: .
+    container_name: celery_beat
+    command: celery -A src.celery_worker beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres_db
+    volumes:
+      - .:/app
+    networks:
+      - kyc_network
+
+volumes:
+  postgres_data:
+
+networks:
+  kyc_network:
+    driver: bridge
