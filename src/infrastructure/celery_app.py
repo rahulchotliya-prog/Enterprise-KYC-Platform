@@ -1,6 +1,4 @@
 from celery import Celery
-from src.database.base import *
-import os
 from src.config.settings import settings
 
 celery_app = Celery(
@@ -17,5 +15,3 @@ celery_app.conf.update(
     enable_utc=True,
 )
 celery_app.autodiscover_tasks(["src.documents"])
-
-import src.infrastructure.tasks.document_task

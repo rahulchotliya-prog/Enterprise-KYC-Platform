@@ -3,11 +3,9 @@ import asyncio
 from sqlalchemy import update
 from src.database.session import AsyncSessionLocal
 from src.documents.models import Document
-from src.auth.models import User
 from src.documents.constants import DocumentStatus
 import time
 from src.documents.utils import simulate_ocr_extraction,validate_extracted_data
-# from src.infrastructure.redis import redis_client
 from src.infrastructure.redis import get_redis_client
 from src.infrastructure.logging.logger import logger
 
@@ -23,7 +21,6 @@ def process_document_task(self,document_id:str):
     
     # print(f"Processing document with id: {document_id}")
     logger.info(f"Processing document with id: {document_id}")
-    start_time = time.time()
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
     # try:

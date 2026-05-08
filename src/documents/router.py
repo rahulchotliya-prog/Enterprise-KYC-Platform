@@ -42,7 +42,7 @@ async def get_document_status(document_id:str,db:AsyncSession = Depends(get_db))
         return {
             "status":document.status
         }
-    except:
+    except Exception:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Document not found")
     
 @router.get("/analytics/summary")
