@@ -1,1 +1,1 @@
-from .document_task import process_document_task
+from .document_task import process_document_task as process_document_task

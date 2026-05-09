@@ -4,7 +4,6 @@ from httpx import AsyncClient, ASGITransport
 from src.main import app
 from src.auth.dependencies import get_current_user
 
-from uuid import uuid4
 
 @pytest_asyncio.fixture
 async def client():
