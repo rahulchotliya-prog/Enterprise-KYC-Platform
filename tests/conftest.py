@@ -10,14 +10,26 @@ from src.main import app
 from src.auth.dependencies import get_current_user
 
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
-    sync_database_url = getattr(settings, "SYNC_DATABASE_URL", None) or settings.DATABASE_URL
-    if sync_database_url.startswith("postgresql+asyncpg://"):
-        sync_database_url = sync_database_url.replace(
-            "postgresql+asyncpg://", "postgresql+psycopg2://", 1
+def _get_sync_database_url():
+    if settings.DATABASE_URL:
+        db_url = settings.DATABASE_URL
+    else:
+        db_url = getattr(settings, "SYNC_DATABASE_URL", None)
+
+    if not db_url:
+        raise RuntimeError(
+            "DATABASE_URL or SYNC_DATABASE_URL must be configured for tests."
         )
 
+    if db_url.startswith("postgresql+asyncpg://"):
+        db_url = db_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+
+    return db_url
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database():
+    sync_database_url = _get_sync_database_url()
     engine = create_engine(sync_database_url, poolclass=NullPool)
     Base.metadata.create_all(bind=engine)
     yield
@@ -26,11 +38,7 @@ def setup_test_database():
 
 @pytest.fixture(autouse=True)
 def reset_database_between_tests():
-    sync_database_url = getattr(settings, "SYNC_DATABASE_URL", None) or settings.DATABASE_URL
-    if sync_database_url.startswith("postgresql+asyncpg://"):
-        sync_database_url = sync_database_url.replace(
-            "postgresql+asyncpg://", "postgresql+psycopg2://", 1
-        )
+    sync_database_url = _get_sync_database_url()
     engine = create_engine(sync_database_url, poolclass=NullPool)
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
