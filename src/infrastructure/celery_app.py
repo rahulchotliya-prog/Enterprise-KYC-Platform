@@ -14,4 +14,5 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
 )
-celery_app.autodiscover_tasks(["src.documents"])
+celery_app.autodiscover_tasks(["src.infrastructure"])
+celery_app.conf.imports = ("src.infrastructure.tasks.document_task",)

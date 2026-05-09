@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGORIGHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+    SYNC_DATABASE_URL: str
 
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str

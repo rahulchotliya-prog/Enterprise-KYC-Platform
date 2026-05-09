@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.base import Base
+from src.auth.models import User
 
 from sqlalchemy import JSON
 
@@ -27,4 +28,4 @@ class Document(Base):
     processing_time: Mapped[int | None] = mapped_column(Integer, nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    user = relationship("User")
+    user = relationship(User)
