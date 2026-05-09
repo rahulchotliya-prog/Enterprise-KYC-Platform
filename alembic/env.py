@@ -1,12 +1,12 @@
 from logging.config import fileConfig
 import os
+from pathlib import Path
 
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from src.database.base import Base
 # from src.database.models import 
-from src.config.settings import settings
 
 # Alembic Config object
 config = context.config
@@ -15,23 +15,31 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# -------------------------------------------------------------------
-# DATABASE URL
-# -------------------------------------------------------------------
+# Load environment variables from .env if present
+ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
+if ENV_FILE.exists():
+    with ENV_FILE.open() as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            if key and key not in os.environ:
+                os.environ[key] = value
 
-# First try environment variable from Docker
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Fallback to settings if env variable missing
+# Find database URL from environment or alembic.ini
+DATABASE_URL = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
 if not DATABASE_URL:
-    DATABASE_URL = settings.DATABASE_URL
+    raise RuntimeError(
+        "DATABASE_URL is missing. Set DATABASE_URL or configure sqlalchemy.url in alembic.ini."
+    )
 
 print("DATABASE_URL =", DATABASE_URL)
 
 # Convert asyncpg URL -> psycopg2 sync URL for Alembic
 SYNC_DATABASE_URL = DATABASE_URL.replace(
     "postgresql+asyncpg",
-    "postgresql+psycopg2"
+    "postgresql+psycopg2",
 )
 
 print("SYNC_DATABASE_URL =", SYNC_DATABASE_URL)
