@@ -5,8 +5,10 @@ from src.auth.dependencies import get_current_user
 from src.auth.models import User
 
 from src.database.session import get_db
-
-
+from fastapi import WebSocket
+from src.infrastructure.websocket.manager import (
+    manager,
+)
 from src.documents.repository import DocumentRepository
 from src.documents.service import DocumentService
 from src.documents.schemas import DocumentResponse
@@ -73,3 +75,27 @@ async def performance_metrics(db: AsyncSession = Depends(get_db)):
     repository = DocumentRepository(db)
     avg_time = await repository.average_processing_time()
     return {"average_processing_time": avg_time}
+
+
+@router.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str,):
+    await manager.connect(
+        user_id,
+        websocket,
+    )
+    print(f"User {user_id} connected to WebSocket")
+    try:
+        await websocket.send_text("Connected to document websocket")
+        print(f"Sent welcome message to user {user_id}")
+
+        while True:
+
+            message = await websocket.receive_text()
+            print(f"Received message from user {user_id}: {message}")
+            response = f"Server received: {message}"
+            await websocket.send_text(response)
+            print(f"Sent response to user {user_id}: {response}")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        manager.disconnect(user_id) 

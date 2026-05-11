@@ -1,14 +1,14 @@
 from src.infrastructure.celery_app import celery_app
 import asyncio
-from sqlalchemy import update
+from sqlalchemy import select, update
 from src.database.session import AsyncSessionLocal
 from src.documents.models import Document
 from src.documents.constants import DocumentStatus
 import time
 from src.documents.utils import simulate_ocr_extraction, validate_extracted_data
+import json
 from src.infrastructure.redis import get_redis_client
 from src.infrastructure.logging.logger import logger
-
 
 # @celery_app.task
 @celery_app.task(
@@ -60,7 +60,30 @@ async def process_document(document_id: str):
 
         # print("Processing Started")
         logger.info("Processing Started")
+        document_query = await db.execute(
+            select(Document).where(
+                Document.id == document_id
+            )
+        )
 
+        document = (
+            document_query.scalar_one()
+        )
+
+        user_id = str(document.user_id)
+        print(f"User ID: {user_id}")
+        redis_client = get_redis_client()
+        await redis_client.publish(
+            "document_notifications",
+            json.dumps(
+                {
+                    "user_id": user_id,
+                    "event": "document_processing",
+                    "document_id": document_id,
+                    "status": "PROCESSING",
+                }
+            ),
+        )
         await asyncio.sleep(5)
 
         # await db.execute(
@@ -86,13 +109,24 @@ async def process_document(document_id: str):
             )
         )
         await db.commit()
+        redis_client = get_redis_client()
+        await redis_client.publish(
+            "document_notifications",
+            json.dumps(
+                {
+                    "user_id": user_id,
+                    "event": "document_completed",
+                    "document_id": document_id,
+                    "status": "VERIFIED",
+                }
+            ),
+        )
         # print(f"Processing time: {processing_time} seconds")
         logger.info(f"Processing time: {processing_time} seconds")
         try:
             # await redis_client.delete("analytics_summary")
-            redist_client = get_redis_client()
-            await redist_client.delete("analytics_summary")
-            await redist_client.close()
+            redis_client = get_redis_client()
+            await redis_client.delete("analytics_summary")
             # print("Deleted analytics summary cache")
             logger.info("Deleted analytics summary cache")
         except Exception as e:

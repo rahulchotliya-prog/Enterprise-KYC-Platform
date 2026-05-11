@@ -6,7 +6,9 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from src.database.base import Base
-# from src.database.models import 
+# Import all models to ensure they are registered with SQLAlchemy
+import src.auth.models
+import src.documents.models 
 
 # Alembic Config object
 config = context.config

@@ -56,7 +56,7 @@ services:
   celery_beat:
     build: .
     container_name: celery_beat
-    command: celery -A src.celery_worker beat --loglevel=info
+    command: celery -A src.infrastructure.celery_app beat --loglevel=info
     env_file:
       - .env
     depends_on:
