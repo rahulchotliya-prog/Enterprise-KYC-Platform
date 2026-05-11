@@ -6,7 +6,7 @@ from src.documents.models import Document
 from src.documents.repository import DocumentRepository
 from src.documents.utils import chunk_content, validate_file_size, validate_file_type
 import json
-from src.infrastructure.redis import redis_client
+from src.infrastructure.redis import get_redis_client
 from src.infrastructure.tasks.document_task import process_document_task
 
 
@@ -47,12 +47,16 @@ class DocumentService:
         )
 
         saved_document = await self.repository.create_document(document)
+        redis_client = get_redis_client()
+        try:
+            await redis_client.delete("analytics_summary")
+        finally:
+            await redis_client.aclose()
 
         # CELERY TASK
         print("BEFORE CELERY")
 
         task = process_document_task.delay(str(saved_document.id))
-        # await redis_client.delete("analytics_summary")
         print("AFTER CELERY")
         print(task)
 
@@ -61,13 +65,16 @@ class DocumentService:
     async def get_cached_analytics(self):
         cache_key = "analytics_summary"
 
-        cached_data = await redis_client.get(cache_key)
-        # await redis_client.delete("analytics_summary")
-        if cached_data:
-            return json.loads(cached_data)
-        analytics = await self.repository.get_analytics()
-        await redis_client.set(cache_key, json.dumps(analytics))
-        return analytics
+        redis_client = get_redis_client()
+        try:
+            cached_data = await redis_client.get(cache_key)
+            if cached_data:
+                return json.loads(cached_data)
+            analytics = await self.repository.get_analytics()
+            await redis_client.set(cache_key, json.dumps(analytics))
+            return analytics
+        finally:
+            await redis_client.aclose()
 
     async def mark_document_failed(self, document_id: str, reason: str):
         document = await self.repository.get_by_id(document_id)

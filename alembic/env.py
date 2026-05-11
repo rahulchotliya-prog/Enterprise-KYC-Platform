@@ -7,8 +7,11 @@ from alembic import context
 
 from src.database.base import Base
 # Import all models to ensure they are registered with SQLAlchemy
-import src.auth.models
-import src.documents.models 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # Alembic Config object
 config = context.config
@@ -17,27 +20,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Load environment variables from .env if present
-ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
-if ENV_FILE.exists():
-    with ENV_FILE.open() as f:
-        for raw_line in f:
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            if key and key not in os.environ:
-                os.environ[key] = value
 
-# Find database URL from environment or alembic.ini
-DATABASE_URL = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
-if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL is missing. Set DATABASE_URL or configure sqlalchemy.url in alembic.ini."
-    )
-
+DATABASE_URL = os.getenv("DATABASE_URL")
 print("DATABASE_URL =", DATABASE_URL)
-
 # Convert asyncpg URL -> psycopg2 sync URL for Alembic
 SYNC_DATABASE_URL = DATABASE_URL.replace(
     "postgresql+asyncpg",

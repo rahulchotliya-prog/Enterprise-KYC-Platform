@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
 
-
+ENV_FILE = os.getenv("ENV_FILE", ".env")
+print(f"Loading environment variables from: {ENV_FILE}")
 class Settings(BaseSettings):
     APP_NAME: str
     ENV: str
@@ -11,6 +13,7 @@ class Settings(BaseSettings):
     JWT_ALGORIGHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     SYNC_DATABASE_URL: str | None = None
+    DATABASE_HOST : str
 
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
@@ -19,7 +22,11 @@ class Settings(BaseSettings):
     REDIS_URL: str
     # class Config:  # Check with comment
     #     env_file = ".env"
-    model_config = SettingsConfigDict(env_file=".env")
+    # model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(
+        env_file=ENV_FILE,
+        extra="ignore"
+    )
 
 
 settings = Settings()
