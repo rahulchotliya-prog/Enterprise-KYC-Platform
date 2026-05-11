@@ -10,6 +10,7 @@ import json
 from src.infrastructure.redis import get_redis_client
 from src.infrastructure.logging.logger import logger
 
+
 # @celery_app.task
 @celery_app.task(
     name="src.infrastructure.tasks.document_task",
@@ -61,14 +62,10 @@ async def process_document(document_id: str):
         # print("Processing Started")
         logger.info("Processing Started")
         document_query = await db.execute(
-            select(Document).where(
-                Document.id == document_id
-            )
+            select(Document).where(Document.id == document_id)
         )
 
-        document = (
-            document_query.scalar_one()
-        )
+        document = document_query.scalar_one()
 
         user_id = str(document.user_id)
         print(f"User ID: {user_id}")

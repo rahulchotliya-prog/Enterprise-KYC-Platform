@@ -78,7 +78,10 @@ async def performance_metrics(db: AsyncSession = Depends(get_db)):
 
 
 @router.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str,):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    user_id: str,
+):
     await manager.connect(
         user_id,
         websocket,
@@ -89,7 +92,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str,):
         print(f"Sent welcome message to user {user_id}")
 
         while True:
-
             message = await websocket.receive_text()
             print(f"Received message from user {user_id}: {message}")
             response = f"Server received: {message}"
@@ -98,4 +100,4 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str,):
     except Exception as e:
         print(f"WebSocket error: {e}")
     finally:
-        manager.disconnect(user_id) 
+        manager.disconnect(user_id)
