@@ -73,5 +73,5 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         "message": "Enterprise KYC Platform is up and running!!!!",
         "app": settings.APP_NAME,
         "env": settings.ENV,
-        "database": result.scalar(),  
+        "database": result.scalar(),
     }
