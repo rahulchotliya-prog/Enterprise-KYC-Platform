@@ -79,8 +79,8 @@ jobs:
           ENV: test
           DEBUG: true
           DATABASE_HOST: localhost
-          DATABASE_URL: postgresql+asyncpg://postgres:Rahul123localhost:5432/enterprise_kyc_test
-          SYNC_DATABASE_URL: postgresql://postgres:Rahul123localhost:5432/enterprise_kyc_test
+          DATABASE_URL: postgresql+asyncpg://postgres:Rahul123@localhost:5432/enterprise_kyc_test
+          SYNC_DATABASE_URL: postgresql://postgres:Rahul123@localhost:5432/enterprise_kyc_test
 
           JWT_SECRET_KEY: 5e67125afd3dc01f42a6ac7a7dfe544a0eb40799e544562963271e1c52ad9a8d
           JWT_ALGORIGHM: HS256
@@ -105,8 +105,8 @@ jobs:
           ENV: test
           DEBUG: true
           DATABASE_HOST: localhost
-          DATABASE_URL: postgresql+asyncpg://postgres:Rahul123localhost:5432/enterprise_kyc_test
-          SYNC_DATABASE_URL: postgresql://postgres:Rahul123localhost:5432/enterprise_kyc_test
+          DATABASE_URL: postgresql+asyncpg://postgres:Rahul123@localhost:5432/enterprise_kyc_test
+          SYNC_DATABASE_URL: postgresql://postgres:Rahul123@localhost:5432/enterprise_kyc_test
 
           JWT_SECRET_KEY: 5e67125afd3dc01f42a6ac7a7dfe544a0eb40799e544562963271e1c52ad9a8d
           JWT_ALGORIGHM: HS256
